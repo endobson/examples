@@ -1,0 +1,29 @@
+Build make-req.
+  gcc req.c -static -o make-req
+
+Test 1 (only if machine is GCE machine):
+  ./make-req
+  ./make-req arg
+
+Build docker container.
+  IMAGE=<your image name>
+  docker build -t $IMAGE
+
+Test 2:
+  docker run $IMAGE
+
+Push image:
+  docker push $IMAGE
+
+Start cloud run service and after failure to bind on ports look at logs.
+These are sometimes a minute or two stale.
+
+The observed behavior is the first request fails with a 500 error, the second
+succeeds, and the third succeeds. The third is the same request as the first.
+
+My experimenting has shown that it seems to be that it is the shutdown call
+that causes the problem. But since it seems like it can get into a good state,
+and answer the same request ok some of the time, I cannot blackbox debug it well.
+
+The initial presentation of the problem showed that it was the /token endpoint
+that was affected, other urls were fine.
